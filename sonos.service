@@ -1,0 +1,12 @@
+[Unit]
+Description=Sonos http server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/sonos/sonos.py
+Restart=on-abort
+User=sonos
+
+[Install]
+WantedBy=default.target
