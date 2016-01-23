@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-from soco import SoCo
 from os import path, getcwd
+from re import search
+from urlparse import urlparse
+from soco import SoCo
 from bottle import route, run, request, response
 
 
@@ -21,7 +23,7 @@ class SonosCoordinator(object):
             coordinator_temp = SoCo(speaker)
             if coordinator_temp.is_coordinator:
                 if self.debug:
-                    print('Using {0} as coordinator'.format(coordinator_temp))
+                    print 'Using {0} as coordinator'.format(coordinator_temp)
                 self.coordinator = coordinator_temp
                 break
         if not self.coordinator:
@@ -40,14 +42,17 @@ class SonosCoordinator(object):
     def stop(self):
         self.coordinator.stop()
 
-    def exited(self, url=None):
+    def exited(self):
         self.stop()
 
     def pause(self):
         self.coordinator.pause()
 
     def playpause(self):
-        self.pause() if self.is_playing() else self.coordinator.play()
+        if self.is_playing():
+            self.pause()
+        else:
+            self.play()
 
     def start(self, url=None):
         self.enforce_default_settings()
@@ -66,17 +71,26 @@ class SonosCoordinator(object):
         self.coordinator.add_uri_to_queue(url)
 
 
-def get_mp3_link(url, regexp):
+def get_regexp_from_host(host):
+    regexp_map = {
+        'www.spreaker.com': 'id="track_download" href="(.*?)"',
+        'sysadministrivia.com': '<enclosure url="(.*?)"',
+    }
+    return regexp_map.get(host, '###~NOTEXISTENT~###')
+
+
+def get_mp3_link_from_feed_item(url):
     '''Parse RSS feed item and return mp3 link'''
     import requests
-    from re import search
+
+    host = urlparse(url).netloc
     html = requests.get(url).text
-    mp3_match = search(regexp, html)
+    mp3_match = search(get_regexp_from_host(host), html)
     if mp3_match:
         mp3 = mp3_match.group(1)
         if mp3.endswith('.mp3'):
             return mp3
-    print('Something wrong parsing "{0}", aborting'.format(url))
+    print 'Something wrong parsing "{0}", aborting'.format(url)
     return False
 
 
@@ -88,20 +102,23 @@ def get_speakers_from_txt():
             'speakers.txt',
         )
     )
-    with open(textfile) as f:
-        return [line.rstrip() for line in f.readlines() if not line.startswith('#')]
+    with open(textfile) as speakersfile:
+        return [line.rstrip() \
+            for line in speakersfile.readlines() if not line.startswith('#')]
 
 
-def parse_rss_feed(regexp):
+def add_item_to_sonos_queue(is_feed_item=False):
     try:
-        raw_rss_url = request.query.url
-        mp3_link = get_mp3_link(raw_rss_url, regexp)
-        print mp3_link
-        coordinator.add_uri_to_queue(mp3_link)
+        item = request.query.url
+        if is_feed_item:
+            mp3_link = get_mp3_link_from_feed_item(item)
+        else:
+            mp3_link = item
+        COORDINATOR.add_uri_to_queue(mp3_link)
         return 'Command executed successfully\n'
-    except:
+    except Exception:
         response.status = 400
-        return 'Error parsing url "{0}"\n'.format(raw_rss_url)
+        return 'Error parsing url "{0}"\n'.format(item)
 
 
 @route('/health')
@@ -111,29 +128,17 @@ def healh_check():
 
 @route('/is_playing')
 def is_sonos_playing():
-    return('{0}\n'.format(coordinator.is_playing()))
+    return '{0}\n'.format(COORDINATOR.is_playing())
 
 
 @route('/add_uri_to_queue')
-def add_uri_to_queue():
-    try:
-        mp3_link = request.query.url
-        coordinator.add_uri_to_queue(mp3_link)
-        return 'Command executed successfully\n'
-    except:
-        response.status = 400
-        return 'Error parsing url "{0}"\n'.format(mp3_link)
+def sonos_add_uri_to_queue():
+    return add_item_to_sonos_queue()
 
 
-# TODO unify RSS routes adding regexp map based on host header
-@route('/add_spreaker_rss_episode_to_queue')
-def sonos_add_spreaker_rss_episode_to_queue():
-    parse_rss_feed('id="track_download" href="(.*?)"')
-
-
-@route('/add_sysadministrivia_rss_episode_to_queue')
-def sonos_add_sysadministrivia_rss_episode_to_queue():
-    parse_rss_feed('<enclosure url="(.*?)"')
+@route('/add_rss_episode_to_queue')
+def sonos_add_rss_episode_to_queue():
+    return add_item_to_sonos_queue(is_feed_item=True)
 
 
 @route('/<command>')
@@ -148,13 +153,13 @@ def sonos_command(command='playpause'):
             'pause',
             'playpause',
         )
-    except:
+    except Exception:
         response.status = 404
         return 'Command not found\n'
-    eval('coordinator.{0}()'.format(command))
+    eval('COORDINATOR.{0}()'.format(command))
     return 'Command executed successfully\n'
 
 
 if __name__ == '__main__':
-    coordinator = SonosCoordinator(get_speakers_from_txt())
+    COORDINATOR = SonosCoordinator(get_speakers_from_txt())
     run(host='0.0.0.0', port=9999, quiet=True)
