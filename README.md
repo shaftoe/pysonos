@@ -1,0 +1,2 @@
+# pysonos
+Sonos HTTP proxy
