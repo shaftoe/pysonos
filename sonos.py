@@ -55,7 +55,7 @@ class SonosCoordinator(object):
         self.coordinator.pause()
 
     def exited(self):
-        self.stop()
+        self.pause()
 
     def playpause(self):
         if self.is_playing():
@@ -151,7 +151,7 @@ def sonos_command(command='playpause'):
             'entered',  # Start
             'start',
             'stop',
-            'exited',  # Stop
+            'exited',  # Pause
             'pause',
             'playpause',
         )
