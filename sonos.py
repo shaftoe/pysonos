@@ -39,27 +39,29 @@ class SonosCoordinator(object):
         status = self.coordinator.get_current_transport_info()
         return True if status.get('current_transport_state') == 'PLAYING' else False
 
-    def stop(self):
-        self.coordinator.stop()
-
-    def exited(self):
-        self.stop()
-
-    def pause(self):
-        self.coordinator.pause()
-
-    def playpause(self):
-        if self.is_playing():
-            self.pause()
-        else:
-            self.play()
-
     def start(self, url=None):
         self.enforce_default_settings()
         if url:
             self.coordinator.play_uri(url)
         else:
             self.coordinator.play()
+
+    def stop(self):
+        self.enforce_default_settings()
+        self.coordinator.stop()
+
+    def pause(self):
+        self.enforce_default_settings()
+        self.coordinator.pause()
+
+    def exited(self):
+        self.stop()
+
+    def playpause(self):
+        if self.is_playing():
+            self.pause()
+        else:
+            self.play()
 
     def entered(self):
         self.start()
@@ -146,10 +148,10 @@ def sonos_command(command='playpause'):
     try:
         assert command in (
             'play',
-            'entered', # Start
+            'entered',  # Start
             'start',
             'stop',
-            'exited', # Stop
+            'exited',  # Stop
             'pause',
             'playpause',
         )
