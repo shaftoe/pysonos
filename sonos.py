@@ -6,6 +6,11 @@ from soco import SoCo
 from bottle import route, run, request, response
 
 
+MAX_VOLUME = 30
+DEFAULT_VOLUME = 10
+DEFAULT_VOLUME_DELTA = 5
+
+
 class SonosCoordinatorNotFound(Exception):
     pass
 
@@ -29,11 +34,22 @@ class SonosCoordinator(object):
         if not self.coordinator:
             raise SonosCoordinatorNotFound
 
+    def change_volume(self, delta=0):
+        for sonos in [SoCo(speaker) for speaker in self.speakers]:
+            if sonos.is_visible and 0 <= (sonos.volume + delta) <= MAX_VOLUME:
+                sonos.volume += delta
+
+    def volumeup(self):
+        self.change_volume(DEFAULT_VOLUME_DELTA)
+
+    def volumedown(self):
+        self.change_volume(-DEFAULT_VOLUME_DELTA)
+
     def enforce_default_settings(self):
         self.coordinator.partymode()
         for sonos in [SoCo(speaker) for speaker in self.speakers]:
             if sonos.is_visible:
-                sonos.volume = 10
+                sonos.volume = DEFAULT_VOLUME
 
     def is_playing(self):
         status = self.coordinator.get_current_transport_info()
@@ -154,6 +170,8 @@ def sonos_command(command='playpause'):
             'exited',  # Pause
             'pause',
             'playpause',
+            'volumeup',
+            'volumedown',
         )
     except Exception:
         response.status = 404
