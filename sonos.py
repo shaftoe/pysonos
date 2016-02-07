@@ -88,6 +88,12 @@ class SonosCoordinator(object):
     def add_uri_to_queue(self, url):
         self.coordinator.add_uri_to_queue(url)
 
+    def next(self):
+        self.next()
+
+    def previous(self):
+        self.previous()
+
 
 def get_regexp_from_host(host):
     regexp_map = {
@@ -172,6 +178,8 @@ def sonos_command(command='playpause'):
             'playpause',
             'volumeup',
             'volumedown',
+            'next',
+            'previous',
         )
     except Exception:
         response.status = 404
