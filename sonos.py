@@ -89,10 +89,10 @@ class SonosCoordinator(object):
         self.coordinator.add_uri_to_queue(url)
 
     def next(self):
-        self.next()
+        self.coordinator.next()
 
     def previous(self):
-        self.previous()
+        self.coordinator.previous()
 
 
 def get_regexp_from_host(host):
