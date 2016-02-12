@@ -3,6 +3,7 @@ from os import path, getcwd
 from re import search
 from urlparse import urlparse
 from soco import SoCo
+from soco import alarms as soco_alarms
 from bottle import route, run, request, response
 
 
@@ -18,12 +19,14 @@ class SonosCoordinatorNotFound(Exception):
 class SonosCoordinator(object):
 
     def __init__(self, speakers, debug=False):
+        self.coordinator = None
+        self.alarms = None
         self.debug = debug
         self.speakers = speakers
         self.set_coordinator()
+        self.get_alarms()
 
     def set_coordinator(self):
-        self.coordinator = None
         for speaker in self.speakers:
             coordinator_temp = SoCo(speaker)
             if coordinator_temp.is_coordinator:
@@ -33,6 +36,9 @@ class SonosCoordinator(object):
                 break
         if not self.coordinator:
             raise SonosCoordinatorNotFound
+
+    def get_alarms(self):
+        self.alarms = soco_alarms.get_alarms(soco=self.coordinator)
 
     def change_volume(self, delta=0):
         for sonos in [SoCo(speaker) for speaker in self.speakers]:
@@ -93,6 +99,10 @@ class SonosCoordinator(object):
 
     def previous(self):
         self.coordinator.previous()
+
+    def disable_alarms(self):
+        for alarm in self.alarms:
+            alarm.enabled = False
 
 
 def get_regexp_from_host(host):
@@ -180,12 +190,19 @@ def sonos_command(command='playpause'):
             'volumedown',
             'next',
             'previous',
+            'disable_alarms',
         )
-    except Exception:
+    except AssertionError:
         response.status = 404
         return 'Command not found\n'
-    eval('COORDINATOR.{0}()'.format(command))
-    return 'Command executed successfully\n'
+    try:
+        eval('COORDINATOR.{0}()'.format(command))
+        response.status = 200
+        return 'Command executed successfully\n'
+    except Exception, exception:
+        print exception
+        response.status = 500
+        return 'Command failed because of a problem server side, please check logs\n'
 
 
 if __name__ == '__main__':
