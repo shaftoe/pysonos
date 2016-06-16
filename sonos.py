@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from bottle import route, run
 from slackclient import SlackClient
+import threading
 
 instance_to_terminate = None
 
@@ -34,16 +35,26 @@ def talk_to_slack(message='kabooom'):
     )
 
 
-def get_instance_to_terminate():
-    from time import sleep
-    sleep(1)
-    return 'i-12433242343'
+class BackgroundSomething(threading.Thread):
+    """Manage Nuimo process"""
+
+    def __init__(self, hass, mac):
+        super(BackgroundSomething, self).__init__()
+        self.instance = 'i-12433242343'
+
+    def get_instance_to_terminate(self):
+        return self.instance
+
+    def start(self):
+        from time import sleep  # TODO remove
+        sleep(10)
+        talk_to_slack(message=self.get_instance_to_terminate())
 
 
 @route('/destroyawsinstance')
 def destroyawsinstance():
-    instance_to_terminate = get_instance_to_terminate()
-    return 'random instance {} will be terminated'.format(instance_to_terminate)
+    BackgroundSomething.run()
+    return 'random instance will be terminated'
 
 
 if __name__ == '__main__':
