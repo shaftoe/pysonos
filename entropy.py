@@ -14,7 +14,7 @@ def talk_to_slack(instance):
         "author_name": "Anarchy monkey",
         "author_link": "http://flickr.com/bobby/",
 
-        "title": "Terminating instance {}",
+        "title": "Terminating instance %s",
         "title_link": "https://eu-central-1.console.aws.amazon.com/ec2/v2/home?region=eu-central-1",
 
         "image_url": "http://popcrush1057.com/files/2013/07/369_40932711230_9148_n.jpg",
@@ -23,7 +23,7 @@ def talk_to_slack(instance):
         "footer": "Slack API",
         "footer_icon": "https://platform.slack-edge.com/img/default_application_icon.png",
         "ts": 123456789
-    }]'''.format(instance)
+    }]''' % instance
     token = "xoxp-51486140640-51539345538-51521267030-30b33fdd8a"      # found at https://api.slack.com/web#authentication
     sc = SlackClient(token)
     print sc.api_call(
@@ -50,7 +50,7 @@ class BackgroundSomething(threading.Thread):
     def run(self):
         from time import sleep  # TODO remove
         sleep(10)
-        talk_to_slack(instance=self.get_terminated_instance())
+        talk_to_slack(message=self.get_terminated_instance())
 
 
 @route('/destroyawsinstance')
