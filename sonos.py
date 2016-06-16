@@ -10,7 +10,7 @@ json = '''[{
     "author_name": "Anarchy monkey",
     "author_link": "http://flickr.com/bobby/",
 
-    "title": "Terminating instance {}",
+    "title": "Terminating instance i-1234456",
     "title_link": "https://eu-central-1.console.aws.amazon.com/ec2/v2/home?region=eu-central-1",
 
     "image_url": "http://popcrush1057.com/files/2013/07/369_40932711230_9148_n.jpg",
@@ -28,7 +28,7 @@ def talk_to_slack(message='kabooom'):
     sc = SlackClient(token)
     print sc.api_call(
         "chat.postMessage", channel="#general", text=message,
-        username='ANARCHYMONKEY', attachments=json.format('something'),
+        username='ANARCHYMONKEY', attachments=json,
     )
 
 
