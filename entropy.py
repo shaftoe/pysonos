@@ -50,7 +50,7 @@ class BackgroundSomething(threading.Thread):
     def run(self):
         from time import sleep  # TODO remove
         sleep(10)
-        talk_to_slack(message=self.get_terminated_instance())
+        talk_to_slack(instance=self.get_terminated_instance())
 
 
 @route('/destroyawsinstance')
