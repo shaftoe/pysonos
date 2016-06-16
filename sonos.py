@@ -38,14 +38,14 @@ def talk_to_slack(message='kabooom'):
 class BackgroundSomething(threading.Thread):
     """Manage Nuimo process"""
 
-    def __init__(self, hass, mac):
+    def __init__(self):
         super(BackgroundSomething, self).__init__()
         self.instance = 'i-12433242343'
 
     def get_instance_to_terminate(self):
         return self.instance
 
-    def start(self):
+    def run(self):
         from time import sleep  # TODO remove
         sleep(10)
         talk_to_slack(message=self.get_instance_to_terminate())
@@ -53,7 +53,8 @@ class BackgroundSomething(threading.Thread):
 
 @route('/destroyawsinstance')
 def destroyawsinstance():
-    BackgroundSomething.run()
+    thread = BackgroundSomething()
+    thread.start()
     return 'random instance will be terminated'
 
 
