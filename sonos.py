@@ -13,14 +13,6 @@ json = '''[{
     "title": "Slack API Documentation",
     "title_link": "https://api.slack.com/",
 
-    "fields": [
-        {
-            "title": "Priority",
-            "value": "High",
-            "short": false
-        }
-    ],
-
     "image_url": "http://popcrush1057.com/files/2013/07/369_40932711230_9148_n.jpg",
     "thumb_url": "http://example.com/path/to/thumb.png",
 
