@@ -36,7 +36,7 @@ def talk_to_slack(message='kabooom'):
 
 def get_instance_to_terminate():
     from time import sleep
-    sleep(5)
+    sleep(1)
     return 'i-12433242343'
 
 
