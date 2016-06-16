@@ -5,7 +5,7 @@ import threading
 
 
 @route('/test')
-def talk_to_slack(instance):
+def talk_to_slack(message):
     json = '''[{
         "fallback": "Required plain-text summary of the attachment.",
 
@@ -23,11 +23,11 @@ def talk_to_slack(instance):
         "footer": "Slack API",
         "footer_icon": "https://platform.slack-edge.com/img/default_application_icon.png",
         "ts": 123456789
-    }]''' % instance
+    }]''' % message
     token = "xoxp-51486140640-51539345538-51521267030-30b33fdd8a"      # found at https://api.slack.com/web#authentication
     sc = SlackClient(token)
     print sc.api_call(
-        "chat.postMessage", channel="#general", text=message,
+        "chat.postMessage", channel="#general", text='',
         username='ANARCHYMONKEY', attachments=json,
     )
 
