@@ -28,7 +28,7 @@ def talk_to_slack(message='kabooom'):
     sc = SlackClient(token)
     print sc.api_call(
         "chat.postMessage", channel="#general", text=message,
-        username='ANARCHYMONKEY', attachments=json,
+        username='ANARCHYMONKEY', attachments=json.format('something'),
     )
 
 
