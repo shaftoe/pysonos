@@ -3,30 +3,27 @@ from bottle import route, run
 from slackclient import SlackClient
 import threading
 
-instance_to_terminate = None
-
-json = '''[{
-    "fallback": "Required plain-text summary of the attachment.",
-
-    "color": "#36a64f",
-
-    "author_name": "Anarchy monkey",
-    "author_link": "http://flickr.com/bobby/",
-
-    "title": "Terminating instance i-1234456",
-    "title_link": "https://eu-central-1.console.aws.amazon.com/ec2/v2/home?region=eu-central-1",
-
-    "image_url": "http://popcrush1057.com/files/2013/07/369_40932711230_9148_n.jpg",
-    "thumb_url": "http://example.com/path/to/thumb.png",
-
-    "footer": "Slack API",
-    "footer_icon": "https://platform.slack-edge.com/img/default_application_icon.png",
-    "ts": 123456789
-}]'''
-
 
 @route('/test')
-def talk_to_slack(message='kabooom'):
+def talk_to_slack(instance):
+    json = '''[{
+        "fallback": "Required plain-text summary of the attachment.",
+
+        "color": "#36a64f",
+
+        "author_name": "Anarchy monkey",
+        "author_link": "http://flickr.com/bobby/",
+
+        "title": "Terminating instance {}",
+        "title_link": "https://eu-central-1.console.aws.amazon.com/ec2/v2/home?region=eu-central-1",
+
+        "image_url": "http://popcrush1057.com/files/2013/07/369_40932711230_9148_n.jpg",
+        "thumb_url": "http://example.com/path/to/thumb.png",
+
+        "footer": "Slack API",
+        "footer_icon": "https://platform.slack-edge.com/img/default_application_icon.png",
+        "ts": 123456789
+    }]'''.format(instance)
     token = "xoxp-51486140640-51539345538-51521267030-30b33fdd8a"      # found at https://api.slack.com/web#authentication
     sc = SlackClient(token)
     print sc.api_call(
@@ -40,15 +37,20 @@ class BackgroundSomething(threading.Thread):
 
     def __init__(self):
         super(BackgroundSomething, self).__init__()
-        self.instance = 'i-12433242343'
+        self.instance = 'i-wljdfaljdljas'
+        # self.instance = None
 
-    def get_instance_to_terminate(self):
+    def get_terminated_instance(self):
+        # pick the right instance
+        # self.instance = the real value from APIs
+        # terminate
+        # poll for terminated state
         return self.instance
 
     def run(self):
         from time import sleep  # TODO remove
         sleep(10)
-        talk_to_slack(message=self.get_instance_to_terminate())
+        talk_to_slack(message=self.get_terminated_instance())
 
 
 @route('/destroyawsinstance')
