@@ -2,6 +2,8 @@
 from bottle import route, run
 from slackclient import SlackClient
 
+instance_to_terminate = None
+
 json = '''[{
     "fallback": "Required plain-text summary of the attachment.",
 
@@ -32,13 +34,17 @@ def talk_to_slack(message='kabooom'):
     )
 
 
+def get_instance_to_terminate():
+    from time import sleep
+    sleep(5)
+    return 'i-12433242343'
+
+
 @route('/destroyawsinstance')
 def destroyawsinstance():
-    # get_random_instance()
-    return 'will terminated random instance i-12345'
+    instance_to_terminate = get_instance_to_terminate()
+    return 'random instance {} will be terminated'.format(instance_to_terminate)
 
 
 if __name__ == '__main__':
     run(host='0.0.0.0', port=80, quiet=False)
-
-# pick random instance (but not myself)
