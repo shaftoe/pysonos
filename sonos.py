@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from sys import argv
 from os import path, getcwd
 from re import search
 from urlparse import urlparse
@@ -12,8 +13,7 @@ DEFAULT_VOLUME = 10
 DEFAULT_VOLUME_DELTA = 5
 
 
-class SonosCoordinatorNotFound(Exception):
-    pass
+class SonosCoordinatorNotFound(Exception): pass
 
 
 class SonosCoordinator(object):
@@ -196,7 +196,7 @@ def sonos_command(command='playpause'):
         response.status = 404
         return 'Command not found\n'
     try:
-        eval('COORDINATOR.{0}()'.format(command))
+        getattr(COORDINATOR, command)()
         response.status = 200
         return 'Command executed successfully\n'
     except Exception, exception:
@@ -207,4 +207,8 @@ def sonos_command(command='playpause'):
 
 if __name__ == '__main__':
     COORDINATOR = SonosCoordinator(get_speakers_from_txt())
-    run(host='0.0.0.0', port=9999, quiet=True)
+
+    if len(argv) == 2:
+        COORDINATOR.add_uri_to_queue(argv[1])
+    else:
+        run(host='0.0.0.0', port=9999, quiet=True)
